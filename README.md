@@ -1,6 +1,6 @@
-# Robot Raconteur Python Examples
+# Robot Raconteur Service Browser
 
-This repository contains several examples demonstrating how to use the Robot Raconteur library in Python programs. The services are design to control an iRobot Create robot and read images from webcams. There is also a simple simulation that can be used if a physical robot is not available.
+This repository contains a Service Browser for Robot Raconteur to allow the user to quickly view the available Robot Raconteur Services being advertised on the network to which the computer is connected. This is a tool used to verify the presence of an active RR service or to quickly find the details of active RR services to assist in connecting applicable clients.
 
 ### Installation
 
