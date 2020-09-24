@@ -83,6 +83,8 @@ class ServiceBrowser(QObject):
         service_list_widget = QListWidget()        
         service_info_label = QLabel()
         service_info_label.setFixedHeight(200)
+        refresh_button_widget = QPushButton()
+        refresh_button_widget.setText("Refresh")
         service_info_font = service_info_label.font()
         service_info_font.setFamily("Courier New")
         service_info_label.setFont(service_info_font)
@@ -93,7 +95,8 @@ class ServiceBrowser(QObject):
         
         vbox = QVBoxLayout()
         vbox.addWidget(service_list_widget)        
-        vbox.addWidget(service_info_label)        
+        vbox.addWidget(service_info_label) 
+        vbox.addWidget(refresh_button_widget)
         w.setLayout(vbox)
         
         w.setWindowTitle("Available Services")
@@ -101,7 +104,12 @@ class ServiceBrowser(QObject):
         service_selected=False
         service_info=None
         webcam_service_info=None                    
-            
+           
+
+        def refresh():
+            RRN.UpdateDetectedNodes(['rr+tcp','rrs+tcp','rr+quic'])
+
+        refresh_button_widget.clicked.connect(refresh)
         
         def selection_changed():
             try:
