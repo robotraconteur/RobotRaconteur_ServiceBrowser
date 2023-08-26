@@ -3,13 +3,14 @@
 
 import time
 import sys
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
+from PySide6.QtWidgets import *
+from PySide6.QtGui import *
+from PySide6.QtCore import *
 from RobotRaconteur.Client import *
 import traceback
 import threading
 from urllib.parse import urlparse
+import importlib_resources
 
 if (sys.version_info > (3, 0)):
     def cmp(x, y):
@@ -155,8 +156,10 @@ class ServiceQListWidgetItem(QListWidgetItem):
 
 def main():
     
-    app=QApplication(sys.argv)        
-    icon = QIcon('RRIcon.bmp')
+    icon_path = str(importlib_resources.files(__package__) / 'RRIcon.bmp')
+
+    app=QApplication(sys.argv)
+    icon = QIcon(icon_path)
     app.setWindowIcon(icon)    
     with RR.ClientNodeSetup():
         c = ServiceBrowser(app)
