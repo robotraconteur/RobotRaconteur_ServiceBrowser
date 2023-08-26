@@ -1,6 +1,10 @@
 [project]
 name = "robotraconteur-service-browser-gui"
 version = "0.2.0"
+authors = [
+    {name = "John Wason", email = "wason@wasontech.com"}
+]
+description = "Robot Raconteur Service Browser GUI"
 requires-python = ">=3.6"
 dependencies = [
     "robotraconteur",
@@ -8,6 +12,8 @@ dependencies = [
     "PySide6",
     "importlib-resources"
 ]
+
+readme = "README.md"
 
 
 [build-system]
