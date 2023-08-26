@@ -3,13 +3,15 @@
 
 import time
 import sys
-from PySide2.QtWidgets import *
-from PySide2.QtGui import *
-from PySide2.QtCore import *
+from PySide6.QtWidgets import *
+from PySide6.QtGui import *
+from PySide6.QtCore import *
 from RobotRaconteur.Client import *
 import traceback
 import threading
 from urllib.parse import urlparse
+import importlib_resources
+import io
 
 if (sys.version_info > (3, 0)):
     def cmp(x, y):
@@ -82,7 +84,6 @@ class ServiceBrowser(QObject):
                 
         service_list_widget = QListWidget()        
         service_info_label = QLabel()
-        service_info_label.setFixedHeight(200)
         refresh_button_widget = QPushButton()
         refresh_button_widget.setText("Refresh")
         service_info_font = service_info_label.font()
@@ -92,10 +93,15 @@ class ServiceBrowser(QObject):
                                             Qt.TextSelectableByKeyboard)
         service_info_label.setCursor(QCursor(Qt.IBeamCursor))
         service_info_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        service_info_label_scroll = QScrollArea()
+        service_info_label_scroll.setFixedHeight(200)
+        service_info_label_scroll.setWidget(service_info_label)
+        service_info_label_scroll.setWidgetResizable(True)
         
         vbox = QVBoxLayout()
         vbox.addWidget(service_list_widget)        
-        vbox.addWidget(service_info_label) 
+        vbox.addWidget(service_info_label_scroll) 
         vbox.addWidget(refresh_button_widget)
         w.setLayout(vbox)
         
@@ -118,18 +124,33 @@ class ServiceBrowser(QObject):
                     service_info_label.setText("")
                 else:
                     service_info=current_item.service_info
-                    info_text = "Service:\n" \
-                        "    NodeID:     " + str(service_info.NodeID) + "\n" \
-                        "    NodeName:   " + service_info.NodeName + "\n" \
-                        "    Service:    "  + service_info.Name + "\n" \
-                        "    Type:       " + service_info.RootObjectType + "\n" \
-                        "    Implements: " + ', '.join(service_info.RootObjectImplements) +"\n" \
-                        "    URL:        " + service_info.ConnectionURL[0] + "\n"
+                    candidate_urls = []
+                    try:
+                        node_info = RRN.GetDetectedNodeCacheInfo(service_info.NodeID)
+                        for node_url in node_info.ConnectionURL:
+                            node_short_url = node_url.split('?')[0]
+                            candidate_urls.append(f"{node_short_url}?nodeid={service_info.NodeID.ToString('D')}&service={service_info.Name}")
+                            candidate_urls.append(f"{node_short_url}?nodename={service_info.NodeName}&service={service_info.Name}")                            
+                    except:
+                        traceback.print_exc()
+                        
+                    info_text = io.StringIO()
+                    print("Service:", file=info_text)
+                    print(f"    NodeID:     {service_info.NodeID}", file=info_text)
+                    print(f"    NodeName:   {service_info.NodeName}", file=info_text)
+                    print(f"    Service:    {service_info.Name}", file=info_text)
+                    print(f"    Type:       {service_info.RootObjectType}", file=info_text)
+                    print(f"    Implements: {', '.join(service_info.RootObjectImplements)}", file=info_text)
+                    print(f"    URL:        {service_info.ConnectionURL[0]}", file=info_text)
                     if len(service_info.Attributes) > 0:
-                        info_text += "    Attributes:\n"
+                        print("    Attributes:", file=info_text)
                         for k,v in service_info.Attributes.items():
-                            info_text += "        " + str(k) + ": " + str(v) + "\n"
-                    service_info_label.setText(info_text)
+                            print(f"        {k}: {v}", file=info_text)
+                    if len(candidate_urls) > 0:
+                        print("    Candidate URLs:", file=info_text)
+                        for candidate_url in candidate_urls:
+                            print(f"        {candidate_url}", file=info_text)
+                    service_info_label.setText(info_text.getvalue())
             except:
                 traceback.print_exc()
                
@@ -155,8 +176,10 @@ class ServiceQListWidgetItem(QListWidgetItem):
 
 def main():
     
-    app=QApplication(sys.argv)        
-    icon = QIcon('RRIcon.bmp')
+    icon_path = str(importlib_resources.files(__package__) / 'RRIcon.bmp')
+
+    app=QApplication(sys.argv)
+    icon = QIcon(icon_path)
     app.setWindowIcon(icon)    
     with RR.ClientNodeSetup():
         c = ServiceBrowser(app)
