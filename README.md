@@ -10,7 +10,10 @@ you are using to see if this tool is necessary.
 
 ### Installation
 
-Install using pip:
+On Windows, a single file executable `robotraconteur-service-browser-gui.exe` is available in the releases 
+section of this repository. Download the file and run it.
+
+Alternatively, install using pip:
 
 ```
 pip install robotraconteur-service-browser-gui
